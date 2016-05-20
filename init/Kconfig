@@ -954,6 +954,11 @@ config LINARO
          help
            Enabling this option will use Linaro optimizations.
 
+config CCACHE
+         bool "Use CCACHE with gcc"
+         help
+           Enabling this option will use ccache when compiling.
+
 config SYSCTL
 	bool
 
