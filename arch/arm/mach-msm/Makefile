@@ -398,6 +398,7 @@ obj-$(CONFIG_MSM_VP_REGULATOR) += msm_vp.o
 ifdef CONFIG_MSM_CPR
 obj-$(CONFIG_DEBUG_FS) += msm_cpr-debug.o
 endif
+obj-$(CONFIG_FORCE_FAST_CHARGE) += fastchg.o
 # LGE_CHANGE : bohyun.jung@lge.com 
 # MSM_FIQ is only supported on msm8625. Do you include below files for all msm7x chipset.
 obj-$(CONFIG_MSM_FIQ) += msm7k_fiq.o
