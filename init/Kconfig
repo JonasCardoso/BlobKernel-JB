@@ -949,6 +949,11 @@ config CC_OPTIMIZE_FOR_SIZE
 
 	  If unsure, say Y.
 
+config LINARO
+         bool "Use Linaro optimizations"
+         help
+           Enabling this option will use Linaro optimizations.
+
 config SYSCTL
 	bool
 
