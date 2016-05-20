@@ -983,6 +983,56 @@ static void __devinit acpuclk_hw_init(void)
 	pr_info("ACPU running at %d KHz\n", speed->a11clk_khz);
 }
 
+#ifdef CONFIG_CPU_FREQ_VDD_LEVELS
+
+ssize_t acpuclk_get_vdd_levels_str(char *buf) {
+
+	int i, len = 0;
+
+	if (buf) {
+		mutex_lock(&drv_state.lock);
+		#ifdef CONFIG_MACH_MSM7X25A_M4
+		for (i = 0; pll0_960_pll1_245_pll2_1200_pll4_800[i].a11clk_khz; i++) {
+			/* updated to use uv required by 7x27 architecture - nAa */
+			if (pll0_960_pll1_245_pll2_1200_pll4_800[i].use_for_scaling)
+			len += sprintf(buf + len, "%8u: %8d\n", pll0_960_pll1_245_pll2_1200_pll4_800[i].a11clk_khz, pll0_960_pll1_245_pll2_1200_pll4_800[i].vdd);
+		}
+		#endif
+		#ifdef CONFIG_MACH_MSM7X25A_U0
+		for (i = 0; pll0_960_pll1_245_pll2_1200_pll4_1008[i].a11clk_khz; i++) {
+			/* updated to use uv required by 7x27 architecture - nAa */
+			if (pll0_960_pll1_245_pll2_1200_pll4_1008[i].use_for_scaling)
+			len += sprintf(buf + len, "%8u: %8d\n", pll0_960_pll1_245_pll2_1200_pll4_1008[i].a11clk_khz, pll0_960_pll1_245_pll2_1200_pll4_1008[i].vdd);
+		}
+		#endif
+
+		mutex_unlock(&drv_state.lock);
+	}
+	return len;
+}
+
+void acpuclk_set_vdd(unsigned int khz, int vdd_uv) {
+	int i;
+	printk(KERN_ERR"acpuclk_set_vdd khz: %d, vdd_uv: %d\n", khz, vdd_uv);
+	mutex_lock(&drv_state.lock);
+	#ifdef CONFIG_MACH_MSM7X25A_M4
+	for (i = 0; pll0_960_pll1_245_pll2_1200_pll4_800[i].a11clk_khz; i++) {
+		if ( pll0_960_pll1_245_pll2_1200_pll4_800[i].a11clk_khz == khz)
+			pll0_960_pll1_245_pll2_1200_pll4_800[i].vdd = vdd_uv;
+	}
+	#endif
+	#ifdef CONFIG_MACH_MSM7X25A_U0
+	for (i = 0; pll0_960_pll1_245_pll2_1200_pll4_1008[i].a11clk_khz; i++) {
+		if ( pll0_960_pll1_245_pll2_1200_pll4_1008[i].a11clk_khz == khz)
+			pll0_960_pll1_245_pll2_1200_pll4_1008[i].vdd = vdd_uv;
+	}
+	#endif
+
+
+	mutex_unlock(&drv_state.lock);
+}
+#endif	/* CONFIG_CPU_FREQ_VDD_LEVELS */
+
 static unsigned long acpuclk_7627_get_rate(int cpu)
 {
 	WARN_ONCE(drv_state.current_speed == NULL,
