@@ -171,7 +171,7 @@ config HAVE_HW_BREAKPOINT
 
 config HAVE_HW_BRKPT_RESERVED_RW_ACCESS
 	bool
-	depends on HAVE_HW_BREAKPOINT
+	#depends on HAVE_HW_BREAKPOINT
 	help
 	  Some of the hardware might not have r/w access beyond a certain number
 	  of breakpoint register access.
