@@ -18,7 +18,7 @@ obj-y +=	buffer.o bio.o block_dev.o direct-io.o mpage.o ioprio.o
 else
 obj-y +=	no-block.o
 endif
-
+CFLAGS_namespace.o += -Os
 obj-$(CONFIG_PROC_FS) += proc_namespace.o
 
 obj-$(CONFIG_BLK_DEV_INTEGRITY) += bio-integrity.o

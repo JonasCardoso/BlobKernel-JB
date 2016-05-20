@@ -3,7 +3,7 @@
 #
 
 # Each configuration option enables a list of files.
-
+CFLAGS_bma250_driver.o += -Os
 obj-$(CONFIG_SENSOR_GP2AP)      += gp2ap002.o
 #LGE_CHANGE : 2012-10-24 Sanghun,Lee(eee3114.@lge.com) sensor change from bmc150 to bmc050
 obj-$(CONFIG_SENSORS_BMA2X2)	+= bma2x2_driver.o

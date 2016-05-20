@@ -21,7 +21,8 @@ CFLAGS_REMOVE_rtmutex-debug.o = -pg
 CFLAGS_REMOVE_cgroup-debug.o = -pg
 CFLAGS_REMOVE_irq_work.o = -pg
 endif
-
+CFLAGS_sysctl.o += -Os
+CFLAGS_cgroup.o += -Os
 obj-y += sched/
 obj-y += power/
 
