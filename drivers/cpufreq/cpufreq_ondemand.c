@@ -127,12 +127,7 @@ static DEFINE_MUTEX(dbs_mutex);
 
 static struct workqueue_struct *input_wq;
 
-struct dbs_work_struct {
-	struct work_struct work;
-	unsigned int cpu;
-};
-
-static DEFINE_PER_CPU(struct dbs_work_struct, dbs_refresh_work);
+static DEFINE_PER_CPU(struct work_struct, dbs_refresh_work);
 
 static struct dbs_tuners {
 	unsigned int sampling_rate;
@@ -160,32 +155,32 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
 	u64 idle_time;
 	u64 cur_wall_time;
 	u64 busy_time;
-
+    
 	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
-
+    
 	busy_time  = kcpustat_cpu(cpu).cpustat[CPUTIME_USER];
 	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM];
 	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_IRQ];
 	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ];
 	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL];
 	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_NICE];
-
+    
 	idle_time = cur_wall_time - busy_time;
 	if (wall)
 		*wall = jiffies_to_usecs(cur_wall_time);
-
+    
 	return jiffies_to_usecs(idle_time);
 }
 
 static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
 {
 	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
-
+    
 	if (idle_time == -1ULL)
 		return get_cpu_idle_time_jiffy(cpu, wall);
 	else
 		idle_time += get_cpu_iowait_time_us(cpu, wall);
-
+    
 	return idle_time;
 }
 
@@ -958,15 +953,11 @@ static int should_io_be_busy(void)
 	return 0;
 }
 
-static void dbs_refresh_callback(struct work_struct *work)
+static void dbs_refresh_callback(struct work_struct *unused)
 {
 	struct cpufreq_policy *policy;
 	struct cpu_dbs_info_s *this_dbs_info;
-	struct dbs_work_struct *dbs_work;
-	unsigned int cpu;
-
-	dbs_work = container_of(work, struct dbs_work_struct, work);
-	cpu = dbs_work->cpu;
+	unsigned int cpu = smp_processor_id();
 
 	get_online_cpus();
 
@@ -1013,15 +1004,16 @@ static void dbs_input_event(struct input_handle *handle, unsigned int type,
 		return;
 	}
 
-         for_each_online_cpu(i)
-               queue_work_on(i, input_wq, &per_cpu(dbs_refresh_work, i).work);
 	if (current_sampling_rate > BOOSTED_SAMPLING_RATE) {
 		dbs_tuners_ins.sampling_rate = BOOSTED_SAMPLING_RATE;
 		sampling_rate_boosted_time = ktime_to_us(ktime_get());
 		sampling_rate_boosted = 1;
 	}
-}
 
+	for_each_online_cpu(i) {
+		queue_work_on(i, input_wq, &per_cpu(dbs_refresh_work, i));
+	}
+}
 
 static int dbs_input_connect(struct input_handler *handler,
 		struct input_dev *dev, const struct input_device_id *id)
@@ -1140,6 +1132,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 #endif
 		mutex_unlock(&dbs_mutex);
 
+		mutex_init(&this_dbs_info->timer_mutex);
 
 		if (!ondemand_powersave_bias_setspeed(
 					this_dbs_info->cur_policy,
@@ -1218,14 +1211,7 @@ static int __init cpufreq_gov_dbs_init(void)
 		return -EFAULT;
 	}
 	for_each_possible_cpu(i) {
-		struct cpu_dbs_info_s *this_dbs_info =
-			&per_cpu(od_cpu_dbs_info, i);
-		struct dbs_work_struct *dbs_work =
-			&per_cpu(dbs_refresh_work, i);
-
-		mutex_init(&this_dbs_info->timer_mutex);
-		INIT_WORK(&dbs_work->work, dbs_refresh_callback);
-		dbs_work->cpu = i;
+		INIT_WORK(&per_cpu(dbs_refresh_work, i), dbs_refresh_callback);
 	}
 
 	return cpufreq_register_governor(&cpufreq_gov_ondemand);
