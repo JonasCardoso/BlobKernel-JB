@@ -82,3 +82,4 @@ obj-y += lge_tty_atcmd.o
 #LGE_CHANGE_S jungrock.oh@lge.com 2013-01-05 add lge_kcal
 obj-y += lge_kcal.o
 #LGE_CHANGE_E jungrock.oh@lge.com 2013-01-05 add lge_kcal 
+obj-$(CONFIG_BLX)		+= blx.o
