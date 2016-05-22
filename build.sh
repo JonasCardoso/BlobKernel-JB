@@ -6,7 +6,7 @@
 # Rashed for the base of zip making
 # And the internet for filling in else where
 
-# You need to download https://github.com/TeamVee/android_prebuilt_toolchains
+# You need to download https://github.com/JonasCardoso/Toolchain
 # Clone in the same folder as the kernel to choose a toolchain and not specify a location
 
 # Main Process - Start
@@ -55,17 +55,17 @@ maintoolchain() {
 clear
 echo "-Toolchain choice-"
 echo
-if [ -f ../android_prebuilt_toolchains/aptess.sh ]
+if [ -f ../Toolchain/aptess.sh ]
 then
-	. ../android_prebuilt_toolchains/aptess.sh
+	. ../Toolchain/aptess.sh
 else
-	if [ -d ../android_prebuilt_toolchains ]
+	if [ -d ../Toolchain ]
 	then
 		echo "You not have APTESS Script in Android Prebuilt Toolchain folder"
 		echo "Check the folder"
 		echo "We will use Manual Method now"
 	else
-		echo "-You don't have TeamVee Prebuilt Toolchains-"
+		echo "-You don't have Toolchains-"
 	fi
 	echo
 	echo "Please specify a location"

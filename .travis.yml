@@ -11,13 +11,12 @@ script:
 # This will clone TeamVee Prebuilt Toolchains in directory described in build.sh
 #
 # Branchs available is:
-# Google Branch is "google_gcc" | (1) 4.7 / (2) 4.8
-# Linaro Branch is "linaro_gcc" | (1) 4.8.4 / (2) 4.9.4
+# Linaro Branch is "master" | (1) 4.6.2 / (2) 4.7.3
 
-# Toolchain select here is Google 4.8
-- export ntoolchainbranch="linaro_gcc"
+# Toolchain select here is Linaro 4.7.3
+- export ntoolchainbranch="master"
 - export ntoolchainchoice="2"
-- git clone -b "${ntoolchainbranch}" "https://github.com/TeamVee/android_prebuilt_toolchains" "../android_prebuilt_toolchains"
+- git clone -b "${ntoolchainbranch}" "https://github.com/JonasCardoso/Toolchain "../Toolchain"
 
 # This will call build.sh with following parameters inside ${nbasebuildsh}:
 #
