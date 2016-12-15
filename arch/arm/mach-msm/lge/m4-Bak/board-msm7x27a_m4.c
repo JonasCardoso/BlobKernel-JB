@@ -54,6 +54,8 @@
 #include <linux/atmel_maxtouch.h>
 #include <linux/msm_adc.h>
 #include <linux/msm_ion.h>
+#include <linux/dma-contiguous.h>
+#include <linux/dma-mapping.h>
 /*LGE_CHANGE_S[jyothishre.nk@lge.com]20121009: ram_console support*/
 #ifdef CONFIG_ANDROID_RAM_CONSOLE
 #include <linux/persistent_ram.h>
@@ -276,10 +278,10 @@ static struct msm_i2c_platform_data msm_gsbi1_qup_i2c_pdata = {
 
 #ifdef CONFIG_ARCH_MSM7X27A
 /* JonasCardoso */
-#define MSM_RESERVE_MDP_SIZE       	    0x1600000 	// 0x2300000 
-#define MSM7x25A_MSM_RESERVE_MDP_SIZE       0x1600000
+#define MSM_RESERVE_MDP_SIZE       	    0x1500000 	// 0x2300000 
+#define MSM7x25A_MSM_RESERVE_MDP_SIZE       0x1500000
 
-#define MSM_RESERVE_ADSP_SIZE      	    0x1500000
+#define MSM_RESERVE_ADSP_SIZE      	    0x00D00000
 #define MSM7x25A_MSM_RESERVE_ADSP_SIZE      0xB91000
 #define CAMERA_ZSL_SIZE		(SZ_1M * 60)
 #endif
@@ -290,6 +292,7 @@ static struct platform_device ion_dev;
 static int msm_ion_camera_size;
 static int msm_ion_audio_size;
 static int msm_ion_sf_size;
+static int msm_ion_camera_size_carving;
 #endif
 
 
@@ -870,9 +873,17 @@ static void fix_sizes(void)
 	if (get_ddr_size() > SZ_512M)
 		reserve_adsp_size = CAMERA_ZSL_SIZE;
 #ifdef CONFIG_ION_MSM
-	msm_ion_camera_size = reserve_adsp_size;
 	msm_ion_audio_size = MSM_RESERVE_AUDIO_SIZE;
 	msm_ion_sf_size = reserve_mdp_size;
+#ifdef CONFIG_CMA
+        if (get_ddr_size() > SZ_256M)
+                reserve_adsp_size = CAMERA_ZSL_SIZE;
+	msm_ion_camera_size = reserve_adsp_size;
+        msm_ion_camera_size_carving = 0;
+#else
+        msm_ion_camera_size = reserve_adsp_size;
+        msm_ion_camera_size_carving = msm_ion_camera_size;
+#endif
 #endif
 }
 /*LGE_CHANGE_E[jyothishre.nk@lge.com]20121102*/
@@ -949,10 +960,6 @@ struct ion_platform_heap msm7x27a_heaps[] = {
 #endif
 };
 
-/**
- * These heaps are listed in the order they will be allocated.
- * Don't swap the order unless you know what you are doing!
- */
 static struct ion_platform_data ion_pdata = {
 	.nr = MSM_ION_HEAP_NUM,
 	.has_outer_cache = 1,
@@ -992,8 +999,9 @@ static void __init size_ion_devices(void)
 static void __init reserve_ion_memory(void)
 {
 #if defined(CONFIG_ION_MSM) && defined(CONFIG_MSM_MULTIMEDIA_USE_ION)
-	msm7x27a_reserve_table[MEMTYPE_EBI1].size += msm_ion_camera_size;
 	msm7x27a_reserve_table[MEMTYPE_EBI1].size += RESERVE_KERNEL_EBI1_SIZE;
+        msm7x27a_reserve_table[MEMTYPE_EBI1].size +=
+		msm_ion_camera_size_carving;
 	msm7x27a_reserve_table[MEMTYPE_EBI1].size += msm_ion_sf_size;
 #endif
 }
@@ -1019,6 +1027,7 @@ static struct reserve_info msm7x27a_reserve_info __initdata = {
 static void __init msm7x27a_reserve(void)
 {
 	reserve_info = &msm7x27a_reserve_info;
+        memblock_remove(MSM8625_NON_CACHE_MEM, SZ_2K);
         memblock_remove(BOOTLOADER_BASE_ADDR, msm_ion_audio_size);
 	msm_reserve();
 #ifdef CONFIG_CMA
