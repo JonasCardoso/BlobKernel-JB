@@ -11,11 +11,11 @@ script:
 # This will clone TeamVee Prebuilt Toolchains in directory described in build.sh
 #
 # Branchs available is:
-# Linaro Branch is "master" | (1) 4.6.2 / (2) 4.7.3
+# Linaro Branch is "master" | (1) 4.8.4 / (2) 4.9.4
 
-# Toolchain select here is Linaro 4.7.3
+# Toolchain select here is Linaro 4.8.4
 - export ntoolchainbranch="master"
-- export ntoolchainchoice="2"
+- export ntoolchainchoice="3"
 - git clone -b "${ntoolchainbranch}" "https://github.com/JonasCardoso/Toolchain" "../Toolchain"
 
 # This will call build.sh with following parameters inside ${nbasebuildsh}:
@@ -34,37 +34,16 @@ script:
 # ${nbuild} = "5" is "Build Kernel" and "6" is "Zip the kernel and Modules"
 - nbuild="56"
 # Last "q" is to Exit of Script
-
-# For LG L5 NFC | E610
-- export ndevicechoice="0"
-- export nbasebuildsh="${ndevice}${ndevicechoice}${ntoolchain}${nbuild}q"
-- source build.sh <<< "${nbasebuildsh}"
-- export zipfile0="${zipfile}"
 # For LG L5 NoNFC | E612 E617
 - export ndevicechoice="1"
 - export nbasebuildsh="${ndevice}${ndevicechoice}${nbuild}q"
 - source build.sh <<< "${nbasebuildsh}"
-- export zipfile1="${zipfile}"
-# For LG L7 NFC | P700
-- export ndevicechoice="2"
-- export nbasebuildsh="${ndevice}${ndevicechoice}${nbuild}q"
-- source build.sh <<< "${nbasebuildsh}"
-- export zipfile2="${zipfile}"
+- export zipfile0="${zipfile}"
 # For LG L7 NoNFC | P705
 - export ndevicechoice="3"
 - export nbasebuildsh="${ndevice}${ndevicechoice}${nbuild}q"
 - source build.sh <<< "${nbasebuildsh}"
-- export zipfile3="${zipfile}"
-# For LG L1 II Single/Dual | E410 E411 E415 E420
-- export ndevicechoice="4"
-- export nbasebuildsh="${ndevice}${ndevicechoice}${nbuild}q"
-- source build.sh <<< "${nbasebuildsh}"
-- export zipfile4="${zipfile}"
-# For LG L3 II Single/Dual | E425 E430 E431 E435"
-- export ndevicechoice="5"
-- export nbasebuildsh="${ndevice}${ndevicechoice}${nbuild}q"
-- source build.sh <<< "${nbasebuildsh}"
-- export zipfile5="${zipfile}"
+- export zipfile1="${zipfile}"
 deploy:
   provider: releases
   skip_cleanup: true
@@ -73,9 +52,5 @@ deploy:
   file:
     - "zip-creator/${zipfile0}"
     - "zip-creator/${zipfile1}"
-    - "zip-creator/${zipfile2}"
-    - "zip-creator/${zipfile3}"
-    - "zip-creator/${zipfile4}"
-    - "zip-creator/${zipfile5}"
   on:
     tags: true
